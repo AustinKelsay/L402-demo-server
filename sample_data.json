@@ -1,0 +1,26 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Premium API Access",
+      "description": "24-hour access to premium endpoints",
+      "price": 1000
+    },
+    {
+      "id": 2,
+      "name": "Basic API Access",
+      "description": "24-hour access to basic endpoints",
+      "price": 500
+    }
+  ],
+  "protected_data": [
+    {
+      "id": 1,
+      "content": "This is some premium protected content"
+    },
+    {
+      "id": 2,
+      "content": "This is more premium protected content"
+    }
+  ]
+}
