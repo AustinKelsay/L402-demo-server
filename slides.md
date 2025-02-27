@@ -35,6 +35,16 @@ Think of it as a **digital vending machine** for web services
 
 ---
 
+## Practical Uses for L402
+
+- **AI API access** - Pay per query/request
+- **Content paywalls** - Articles, videos, downloads
+- **Data services** - Weather, financial, specialized info
+- **Rate limiting** - Natural spam prevention
+- **Anonymous access** - No account needed
+
+---
+
 # Core Components
 
 1. **HTTP 402**: "Payment Required" status code
@@ -157,29 +167,49 @@ const lnd = axios.create({
 
 ---
 
-## Step 3: Invoice Functions (lnd.js)
+## Step 3: Lookup Invoice Function (lnd.js)
 
 ```javascript
-// Add function to create Lightning invoices
+// https://lightning.engineering/api-docs/api/lnd/lightning/lookup-invoice
+const lookupInvoice = async (rHashStr) => {
+   try {
+      // Convert from base64 to hex if needed
+      const isBase64 = /^[A-Za-z0-9+/]*={0,2}$/.test(rHashStr);
+      const hexHash = isBase64 
+         ? Array.from(atob(rHashStr), c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('')
+         : rHashStr;
+
+      const response = await lnd.get(`/v1/invoice/${hexHash}`);
+      console.log('LookupInvoice Response:', JSON.stringify(response.data, null, 2));
+      return response.data;
+   } catch (error) {
+      console.error(
+         "Error looking up invoice:",
+         error.response ? error.response.data : error.message,
+      );
+      throw error;
+   }
+}
+```
+
+---
+
+## Step 4: Add Invoice Function (lnd.js)
+
+```javascript
+// https://lightning.engineering/api-docs/api/lnd/lightning/add-invoice/index.html
 const addInvoice = async (amount) => {
    try {
       const response = await lnd.post("/v1/invoices", {
          value: amount,
       });
+      console.log('AddInvoice Response:', JSON.stringify(response.data, null, 2));
       return response.data;
    } catch (error) {
-      console.error("Error creating invoice:", error);
-      throw error;
-   }
-};
-
-// Add function to check if invoice is paid
-const lookupInvoice = async (rHashStr) => {
-   try {
-      const response = await lnd.get(`/v1/invoice/${rHashStr}`);
-      return response.data;
-   } catch (error) {
-      console.error("Error looking up invoice:", error);
+      console.error(
+         "Error creating invoice:",
+         error.response ? error.response.data : error.message,
+      );
       throw error;
    }
 };
@@ -187,7 +217,7 @@ const lookupInvoice = async (rHashStr) => {
 
 ---
 
-## Step 4: Server Setup (index.js)
+## Step 5: Server Setup (index.js)
 
 ```javascript
 const express = require('express');
@@ -207,7 +237,7 @@ app.use(express.json());
 
 ---
 
-### Step 5: Helper Functions (index.js)
+### Step 6: Generate Invoice Function (index.js)
 
 ```javascript
 // Generate Lightning invoice
@@ -231,7 +261,7 @@ function generateMacaroon(paymentHash) {
 
 ---
 
-### Step 6: Payment Verification (index.js)
+### Step 7: Payment Verification (index.js)
 
 ```javascript
 // Check if invoice has been paid
@@ -268,7 +298,7 @@ async function verifyL402(preimage, macaroon) {
 
 ---
 
-### Step 7: L402 Auth Middleware (index.js)
+### Step 8: L402 Auth Middleware (index.js)
 
 ```javascript
 // Middleware to check L402 authentication
@@ -305,7 +335,7 @@ const checkL402Auth = async (req, res, next) => {
 
 ---
 
-#### Step 8: Request Access Endpoint (index.js)
+#### Step 9: Request Access Endpoint (index.js)
 
 ```javascript
 // Endpoint to request L402 access
@@ -339,7 +369,7 @@ app.post('/api/request-access', async (req, res) => {
 
 ---
 
-### Step 9: Protected Endpoint (index.js)
+### Step 10: Protected Endpoint (index.js)
 
 ```javascript
 // Protected route with L402 authentication
@@ -452,16 +482,6 @@ Note: Replace `<preimage>` with the payment preimage and `<macaroon>` with the v
 4. **Client** uses preimage + macaroon to authenticate
 5. **Server** verifies credentials without payment lookup
 6. **Server** returns protected data
-
----
-
-## Practical Uses for L402
-
-- **AI API access** - Pay per query/request
-- **Content paywalls** - Articles, videos, downloads
-- **Data services** - Weather, financial, specialized info
-- **Rate limiting** - Natural spam prevention
-- **Anonymous access** - No account needed
 
 ---
 

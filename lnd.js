@@ -16,41 +16,6 @@ const lnd = axios.create({
    },
 });
 
-// INFO METHODS
-
-// https://lightning.engineering/api-docs/api/lnd/lightning/get-info
-const getInfo = async () => {
-   try {
-      const response = await lnd.get("/v1/getinfo");
-      console.log('GetInfo Response:', JSON.stringify(response.data, null, 2));
-      return response.data;
-   } catch (error) {
-      console.error(
-         "Error fetching LND info:",
-         error.response ? error.response.data : error.message,
-      );
-      throw error;
-   }
-};
-
-// INVOICE METHODS
-
-// https://lightning.engineering/api-docs/api/lnd/lightning/list-invoices
-const listInvoices = async () => {
-   try {
-      // Returns a list of all invoices from the node
-      const response = await lnd.get("/v1/invoices");
-      console.log('ListInvoices Response:', JSON.stringify(response.data, null, 2));
-      return response.data;
-   } catch (error) {
-      console.error(
-         "Error listing invoices:",
-         error.response ? error.response.data : error.message,
-      );
-      throw error;
-   }
-}
-
 // https://lightning.engineering/api-docs/api/lnd/lightning/lookup-invoice
 const lookupInvoice = async (rHashStr) => {
    try {
@@ -89,4 +54,4 @@ const addInvoice = async (amount) => {
    }
 };
 
-module.exports = { getInfo, listInvoices, lookupInvoice, addInvoice };
+module.exports = { lookupInvoice, addInvoice };
